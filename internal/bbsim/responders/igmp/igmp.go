@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-var GetGemPortId = omci.GetGemPortId
+//var GetGemPortId = omci.GetGemPortId
 
 func SendIGMPLeaveGroupV2(ponPortId uint32, onuId uint32, serialNumber string, portNo uint32, macAddress net.HardwareAddr, stream bbsim.Stream) error {
 	log.WithFields(log.Fields{
@@ -47,10 +47,8 @@ func SendIGMPLeaveGroupV2(ponPortId uint32, onuId uint32, serialNumber string, p
                 }).Errorf("Seriliazation of igmp packet failed :  %s", err)
                 return err
 	}
-	if pkt != nil {
-	}
 
-	gemid, err := GetGemPortId(ponPortId, onuId)
+	gemid, err := omci.GetGemPortId(ponPortId, onuId)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"OnuId":  onuId,
@@ -94,10 +92,8 @@ func SendIGMPMembershipReportV2(ponPortId uint32, onuId uint32, serialNumber str
                 }).Errorf("Seriliazation of igmp packet failed :  %s", err)
                 return err
 	}
-	if pkt != nil {
-	}
 
-	gemid, err := GetGemPortId(ponPortId, onuId)
+	gemid, err := omci.GetGemPortId(ponPortId, onuId)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"OnuId":  onuId,
@@ -126,27 +122,23 @@ func SendIGMPMembershipReportV2(ponPortId uint32, onuId uint32, serialNumber str
 
 //func serializeIgmpPacket(intfId uint32, onuId uint32, srcMac net.HardwareAddr, igmp *layers.IGMP) ([]byte, error) {
 func createIGMPV2MembershipReportPacket() IGMP {
-	igmpDefault := IGMP{
+	return IGMP{
 		Type:            0x16, //IGMPV2 Membership Report
 		MaxResponseTime: time.Duration(1),
 		Checksum:        0,
 		GroupAddress:    net.IPv4(224, 0, 0, 22),
 		Version:         2,
 	}
-
-	return igmpDefault
 }
 
 func createIGMPV2LeaveRequestPacket() IGMP {
-	igmpDefault := IGMP{
+	return IGMP{
 		Type:            0x17, //IGMPV2 Leave Group
 		MaxResponseTime: time.Duration(1),
 		Checksum:        0,
 		GroupAddress:    net.IPv4(224, 0, 0, 22),
 		Version:         2,
 	}
-
-	return igmpDefault
 }
 
 func serializeIgmpPacket(intfId uint32, onuId uint32, srcMac net.HardwareAddr, igmp IGMP) ([]byte, error) {
@@ -176,9 +168,8 @@ func serializeIgmpPacket(intfId uint32, onuId uint32, srcMac net.HardwareAddr, i
 	if err := gopacket.SerializeLayers(buffer, options, ethernetLayer, ipLayer, igmp); err != nil {
 		return nil, err
 	}
-
-	bytes := buffer.Bytes()
-	return bytes, nil
+	
+	return buffer.Bytes(), nil
 }
 
 //-----------------------------------------***********************---------------------------------
@@ -209,7 +200,6 @@ type IGMP struct {
 	SourceAddresses         []net.IP
 	NumberOfGroupRecords    uint16
 	NumberOfSources         uint16
-	//      GroupRecords            []IGMPv3GroupRecord
 	Version uint8 // IGMP protocol version
 }
 
@@ -222,14 +212,13 @@ type IGMP struct {
 func (igmp IGMP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
 	//	func (igmp *IGMP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
 	log.Debugf("Serializing IGMP Packet")
-	//      plen := len(igmp)
 	//TODO - add  length check here
 	data, err := b.PrependBytes(8915)
 	if err != nil {
 		return err
 	}
 
-    data[0] = byte(igmp.Type)
+	data[0] = byte(igmp.Type)
 	data[1] = byte(igmp.MaxResponseTime)
 	data[2] = 0
 	data[3] = 0
@@ -263,4 +252,4 @@ func tcpipChecksum(data []byte, csum uint32) uint16 {
 	return ^uint16(csum)
 }
 
-func (i IGMP) LayerType() gopacket.LayerType { return layers.LayerTypeIGMP }
+func (IGMP) LayerType() gopacket.LayerType { return layers.LayerTypeIGMP }

@@ -178,16 +178,14 @@ func (s BBSimServer) ChangeIgmpState(ctx context.Context, req *bbsim.IgmpRequest
 		return res, err
 	} else {
 		event := ""
-                switch req.SubActionVal {
-                case bbsim.SubActionTypes_JOIN:
-                        event = "igmp_join_start"
-                case bbsim.SubActionTypes_LEAVE:
-                        event = "igmp_leave"
+        switch req.SubActionVal {
+        	case bbsim.SubActionTypes_JOIN:  event = "igmp_join_start"
+        	case bbsim.SubActionTypes_LEAVE: event = "igmp_leave"
 
 		}
 		igmpErr := onu.InternalState.Event(event)
 
-		if igmpErr != nil {
+		if igmpErr:= onu.InternalState.Event(event); igmpErr != nil {
 			logger.WithFields(log.Fields{
 				"OnuId":  onu.ID,
 				"IntfId": onu.PonPortID,

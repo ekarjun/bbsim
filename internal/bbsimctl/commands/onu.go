@@ -269,7 +269,6 @@ func (options *ONUIgmp) Execute(args []string) error {
 		log.WithFields(log.Fields{
 			"SerialNumber": options.Args.OnuSn,
 		}).Fatalf("Cannot not get details on ONU error: %v", err)
-		return err
 	}
 	log.WithFields(log.Fields{
     		"SerialNumber": igmpReq.OnuReq.SerialNumber,
@@ -280,7 +279,6 @@ func (options *ONUIgmp) Execute(args []string) error {
 		log.WithFields(log.Fields{
                         "SubAction": options.Args.SubAction,
                 }).Fatalf("Could not process Action: error: %v", igmpErr)
-		return igmpErr
 	} else {
 		fmt.Sprintf("igmp state has been changed with response: %s",
 			igmpRes.Message)
